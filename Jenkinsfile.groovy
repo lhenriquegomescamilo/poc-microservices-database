@@ -33,13 +33,13 @@ podTemplate(
             if (GIT_BRANCH.equals("origin/master")) {
                 KUBE_NAMEPSACE = "prod"
                 ENVIRONMENT = 'prod'
-                HELM_DEPLOY_NAME = ENVIRONMENT+"-"+MICROSERVICE_NAME
+                HELM_DEPLOY_NAME = ENVIRONMENT + "-" + MICROSERVICE_NAME
                 echo "Ambiente production"
                 echo "CURRENT BRANCH ${GIT_BRANCH}"
             } else if (GIT_BRANCH.equals("origin/dev")) {
                 KUBE_NAMEPSACE = "development"
                 ENVIRONMENT = 'development'
-                HELM_DEPLOY_NAME = ENVIRONMENT+"-"+MICROSERVICE_NAME
+                HELM_DEPLOY_NAME = ENVIRONMENT + "-" + MICROSERVICE_NAME
                 IMAGE_POSFIX = "-RC"
                 NODE_PORT = "30011"
                 echo "Ambiente development"
@@ -50,7 +50,7 @@ podTemplate(
             }
             sh "ls -ltra"
             DOCKER_IMAGE_VERSION = sh label: 'get version', returnStdout: true, script: 'sh read-package-json-version.sh'
-            DOCKER_IMAGE_VERSION = DOCKER_IMAGE_VERSION.trim()+IMAGE_POSFIX
+            DOCKER_IMAGE_VERSION = DOCKER_IMAGE_VERSION.trim() + IMAGE_POSFIX
             echo "EXIBINDO DOCKER IMAGE VERSION ${DOCKER_IMAGE_VERSION}"
 
         }
@@ -79,7 +79,7 @@ podTemplate(
                 try {
                     sh "helm upgrade --namespace=${KUBE_NAMEPSACE} ${HELM_DEPLOY_NAME} ${HELM_CHART_NAME} --set image.tag=${DOCKER_IMAGE_VERSION} --set service.nodePort=${NODE_PORT}"
                 } catch (Exception e) {
-                    sh "helm install --namespace=${KUBE_NAMEPSACE} --name=${HELM_DEPLOY_NAME} ${HELM_CHART_NAME} --set image.tag=${DOCKER_IMAGE_VERSION}"
+                    sh "helm install --namespace=${KUBE_NAMEPSACE} --name=${HELM_DEPLOY_NAME} ${HELM_CHART_NAME} --set image.tag=${DOCKER_IMAGE_VERSION} --set service.nodePort=${NODE_PORT}"
                 }
 
             }
