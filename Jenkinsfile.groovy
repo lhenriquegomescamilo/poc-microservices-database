@@ -34,12 +34,16 @@ podTemplate(
                 KUBE_NAMEPSACE = "prod"
                 ENVIRONMENT = 'prod'
                 HELM_DEPLOY_NAME = ENVIRONMENT+"-"+MICROSERVICE_NAME
+                echo "Ambiente production"
+                echo "CURRENT BRANCH ${GIT_BRANCH}"
             } else if (GIT_BRANCH.equals("origin/dev")) {
                 KUBE_NAMEPSACE = "development"
                 ENVIRONMENT = 'development'
                 HELM_DEPLOY_NAME = ENVIRONMENT+"-"+MICROSERVICE_NAME
                 IMAGE_POSFIX = "-RC"
                 NODE_PORT = "30011"
+                echo "Ambiente development"
+                echo "CURRENT BRANCH ${GIT_BRANCH}"
             } else {
                 echo "Não existe pipeline para a branch ${GIT_BRANCH}"
                 exit 0
