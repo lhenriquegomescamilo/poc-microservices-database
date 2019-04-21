@@ -9,6 +9,8 @@ podTemplate(
         ],
         volumes: [hostPathVolume(hostPath: '/var/run/docker.sock', mountPath: '/var/run/docker.sock')]) {
     node('poc-microservices') {
+        def IMAGE_POSFIX = ""
+
         def REPOSITORY
         def GIR_URL_REPOSITORY = 'git@github.com:lhenriquegomescamilo/poc-microservices-database.git'
         def DOCKER_IMAGE = "gateway_database"
@@ -21,6 +23,7 @@ podTemplate(
         def HELM_SERVICE_CHARMUSEUM_URL = "http://helm-chartmuseum:8080"
         def HELM_DEPLOY_NAME
         def HELM_CHART_NAME = "${REPO_HELM_NAME}/${MICROSERVICE_NAME}"
+        def NODE_PORT = "30001"
 
         stage('Checkout') {
             echo 'Iniciando clone do Repositorio'
@@ -35,13 +38,15 @@ podTemplate(
                 KUBE_NAMEPSACE = "development"
                 ENVIRONMENT = 'development'
                 HELM_DEPLOY_NAME = ENVIRONMENT+"-"+MICROSERVICE_NAME
+                IMAGE_POSFIX = "-RC"
+                NODE_PORT = "30011"
             } else {
                 echo "Não existe pipeline para a branch ${GIT_BRANCH}"
                 exit 0
             }
             sh "ls -ltra"
             DOCKER_IMAGE_VERSION = sh label: 'get version', returnStdout: true, script: 'sh read-package-json-version.sh'
-            DOCKER_IMAGE_VERSION = DOCKER_IMAGE_VERSION.trim()
+            DOCKER_IMAGE_VERSION = DOCKER_IMAGE_VERSION.trim()+IMAGE_POSFIX
             echo "EXIBINDO DOCKER IMAGE VERSION ${DOCKER_IMAGE_VERSION}"
 
         }
@@ -68,7 +73,7 @@ podTemplate(
                 sh "helm search ${REPO_HELM_NAME}"
 
                 try {
-                    sh "helm upgrade --namespace=${KUBE_NAMEPSACE} ${HELM_DEPLOY_NAME} ${HELM_CHART_NAME} --set image.tag=${DOCKER_IMAGE_VERSION}"
+                    sh "helm upgrade --namespace=${KUBE_NAMEPSACE} ${HELM_DEPLOY_NAME} ${HELM_CHART_NAME} --set image.tag=${DOCKER_IMAGE_VERSION} --set service.nodePort=${NODE_PORT}"
                 } catch (Exception e) {
                     sh "helm install --namespace=${KUBE_NAMEPSACE} --name=${HELM_DEPLOY_NAME} ${HELM_CHART_NAME} --set image.tag=${DOCKER_IMAGE_VERSION}"
                 }
