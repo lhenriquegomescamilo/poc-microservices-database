@@ -14,14 +14,31 @@ podTemplate(
         def DOCKER_IMAGE = "gateway_database"
         def DOCKER_IMAGE_VERSION = ""
         def MICROSERVICE_NAME = "database"
-
+        def KUBE_NAMEPSACE = ""
+        def ENVIRONMENT = "dev"
+        def GIT_BRANCH
         def REPO_HELM_NAME = "poc-microservice"
         def HELM_SERVICE_CHARMUSEUM_URL = "http://helm-chartmuseum:8080"
+        def HELM_DEPLOY_NAME
+        def HELM_CHART_NAME = "${REPO_HELM_NAME}/${MICROSERVICE_NAME}"
 
         stage('Checkout') {
             echo 'Iniciando clone do Repositorio'
             REPOSITORY = checkout([$class: 'GitSCM', branches: [[name: '*/master'], [name: '*/dev']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'github', url: GIR_URL_REPOSITORY]]])
             echo REPOSITORY.toString()
+            GIT_BRANCH = REPOSITORY.GIT_BRANCH
+            if (GIT_BRANCH.equals("master")) {
+                KUBE_NAMEPSACE = "prod"
+                ENVIRONMENT = 'prod'
+                HELM_DEPLOY_NAME = ENVIRONMENT+"-"+MICROSERVICE_NAME
+            } else if (GIT_BRANCH.equals("dev")) {
+                KUBE_NAMEPSACE = "development"
+                ENVIRONMENT = 'development'
+                HELM_DEPLOY_NAME = ENVIRONMENT+"-"+MICROSERVICE_NAME
+            } else {
+                echo "Não existe pipeline para a branch ${GIT_BRANCH}"
+                exit 0
+            }
             sh "ls -ltra"
             DOCKER_IMAGE_VERSION = sh label: 'get version', returnStdout: true, script: 'sh read-package-json-version.sh'
             DOCKER_IMAGE_VERSION = DOCKER_IMAGE_VERSION.trim()
@@ -49,7 +66,12 @@ podTemplate(
                 sh "helm repo update"
                 sh "helm repo list"
                 sh "helm search ${REPO_HELM_NAME}"
-                sh "helm upgrade ${MICROSERVICE_NAME} ${REPO_HELM_NAME}/${MICROSERVICE_NAME} --set image.tag=${DOCKER_IMAGE_VERSION}"
+
+                try {
+                    sh "helm upgrade --namespace=${KUBE_NAMEPSACE} ${HELM_DEPLOY_NAME} ${HELM_CHART_NAME} --set image.tag=${DOCKER_IMAGE_VERSION}"
+                } catch (Exception e) {
+                    sh "helm install --namespace=${KUBE_NAMEPSACE} --name=${HELM_DEPLOY_NAME} ${HELM_CHART_NAME} --set image.tag=${DOCKER_IMAGE_VERSION}"
+                }
 
             }
         }
