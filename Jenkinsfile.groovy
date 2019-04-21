@@ -20,7 +20,7 @@ podTemplate(
 
         stage('Checkout') {
             echo 'Iniciando clone do Repositorio'
-            REPOSITORY = git credentialsId: 'github', url: GIR_URL_REPOSITORY
+            REPOSITORY = checkout([$class: 'GitSCM', branches: [[name: '*/master'], [name: '*/dev']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'github', url: GIR_URL_REPOSITORY]]])
             echo REPOSITORY.toString()
             sh "ls -ltra"
             DOCKER_IMAGE_VERSION = sh label: 'get version', returnStdout: true, script: 'sh read-package-json-version.sh'
