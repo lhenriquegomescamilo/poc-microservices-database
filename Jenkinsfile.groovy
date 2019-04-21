@@ -27,11 +27,11 @@ podTemplate(
             REPOSITORY = checkout([$class: 'GitSCM', branches: [[name: '*/master'], [name: '*/dev']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'github', url: GIR_URL_REPOSITORY]]])
             echo REPOSITORY.toString()
             GIT_BRANCH = REPOSITORY.GIT_BRANCH
-            if (GIT_BRANCH.equals("master")) {
+            if (GIT_BRANCH.equals("origin/master")) {
                 KUBE_NAMEPSACE = "prod"
                 ENVIRONMENT = 'prod'
                 HELM_DEPLOY_NAME = ENVIRONMENT+"-"+MICROSERVICE_NAME
-            } else if (GIT_BRANCH.equals("dev")) {
+            } else if (GIT_BRANCH.equals("origin/dev")) {
                 KUBE_NAMEPSACE = "development"
                 ENVIRONMENT = 'development'
                 HELM_DEPLOY_NAME = ENVIRONMENT+"-"+MICROSERVICE_NAME
