@@ -10,7 +10,7 @@ podTemplate(
         volumes: [hostPathVolume(hostPath: '/var/run/docker.sock', mountPath: '/var/run/docker.sock')]) {
     node('poc-microservices') {
         def REPOSITORY
-        def GIR_URL_REPOSITORY = 'git@github.com:lhenriquegomescamilo/poc-microservices.git'
+        def GIR_URL_REPOSITORY = 'git@github.com:lhenriquegomescamilo/poc-microservices-database.git'
         def DOCKER_IMAGE = "gateway_database"
         def DOCKER_IMAGE_VERSION = ""
         def MICROSERVICE_NAME = "database"
@@ -22,12 +22,11 @@ podTemplate(
             echo 'Iniciando clone do Repositorio'
             REPOSITORY = git credentialsId: 'github', url: GIR_URL_REPOSITORY
             echo REPOSITORY.toString()
-            dir(MICROSERVICE_NAME) {
-                sh "ls -ltra"
-                DOCKER_IMAGE_VERSION = sh label: 'get version', returnStdout: true, script: 'sh read-package-json-version.sh'
-                DOCKER_IMAGE_VERSION = DOCKER_IMAGE_VERSION.trim()
-                echo "EXIBINDO DOCKER IMAGE VERSION ${DOCKER_IMAGE_VERSION}"
-            }
+            sh "ls -ltra"
+            DOCKER_IMAGE_VERSION = sh label: 'get version', returnStdout: true, script: 'sh read-package-json-version.sh'
+            DOCKER_IMAGE_VERSION = DOCKER_IMAGE_VERSION.trim()
+            echo "EXIBINDO DOCKER IMAGE VERSION ${DOCKER_IMAGE_VERSION}"
+
         }
 
         stage('Package') {
@@ -36,7 +35,7 @@ podTemplate(
                 withCredentials([usernamePassword(credentialsId: 'docker-hub', passwordVariable: 'DOCKER_HUB_PASSWORD', usernameVariable: 'DOCKER_HUB_USER')]) {
                     echo 'Building com npm repositorio'
                     sh "docker login -u ${DOCKER_HUB_USER} -p ${DOCKER_HUB_PASSWORD}"
-                    sh "docker build -t ${DOCKER_HUB_USER}/${DOCKER_IMAGE}:${DOCKER_IMAGE_VERSION} ./${MICROSERVICE_NAME}"
+                    sh "docker build -t ${DOCKER_HUB_USER}/${DOCKER_IMAGE}:${DOCKER_IMAGE_VERSION} ."
                     sh "docker push ${DOCKER_HUB_USER}/${DOCKER_IMAGE}:${DOCKER_IMAGE_VERSION}"
                 }
             }
