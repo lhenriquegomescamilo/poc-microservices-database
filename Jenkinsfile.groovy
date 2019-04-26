@@ -20,7 +20,7 @@ podTemplate(
         def ENVIRONMENT = "dev"
         def GIT_BRANCH
         def REPO_HELM_NAME = "poc-microservice"
-        def HELM_SERVICE_CHARMUSEUM_URL = "http://helm-repo-chartmuseum:8080"
+        def HELM_SERVICE_CHARMUSEUM_URL = "http://10.100.174.52:8080"
         def HELM_DEPLOY_NAME
         def HELM_CHART_NAME = "${REPO_HELM_NAME}/${MICROSERVICE_NAME}"
         def NODE_PORT = "30001"
