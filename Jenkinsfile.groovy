@@ -79,7 +79,7 @@ podTemplate(
                 try {
                     sh "helm upgrade --namespace=${KUBE_NAMEPSACE} --set image.tag=${DOCKER_IMAGE_VERSION} --set service.nodePort=${NODE_PORT} ./config/database"
                 } catch (Exception e) {
-                    sh "helm install --namespace=${KUBE_NAMEPSACE} --name=${HELM_DEPLOY_NAME} --set image.tag=${DOCKER_IMAGE_VERSION} --set service.nodePort=${NODE_PORT} ./config/database"
+                    sh "helm install --namespace=${KUBE_NAMEPSACE} --name=${HELM_DEPLOY_NAME} --set image.tag=${DOCKER_IMAGE_VERSION} --set service.nodePort=${NODE_PORT} ./config/${MICROSERVICE_NAME}"
                 }
 
             }
