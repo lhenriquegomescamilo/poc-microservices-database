@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: {{ include "database.fullname" . }}
+    labels:
+        app.kubernetes.io/name: {{ include "database.name" . }}
+        helm.sh/chart: {{ include "database.chart" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+    replicas: {{ .Values.replicaCount }}
+    selector:
+        matchLabels:
+            app.kubernetes.io/name: {{ include "database.name" . }}
+            app.kubernetes.io/instance: {{ .Release.Name }}
+    template:
+        metadata:
+            labels:
+                app.kubernetes.io/name: {{ include "database.name" . }}
+                app.kubernetes.io/instance: {{ .Release.Name }}
+        spec:
+            containers:
+                - name: {{ .Chart.Name }}
+                  image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+                  imagePullPolicy: {{ .Values.image.pullPolicy }}
+                  env:
+                      - name: URL_MICROSERVICE_DATABASE
+                        valueFrom:
+                            configMapKeyRef:
+                                key: URL_MICROSERVICE_DATABASE
+                                name: poc-microservice
+                      - name: MYSQL_URL
+                        valueFrom:
+                            configMapKeyRef:
+                                key: MYSQL_URL
+                                name: poc-microservice
+                      - name: MYSQL_PORT
+                        valueFrom:
+                            configMapKeyRef:
+                                key: MYSQL_PORT
+                                name: poc-microservice
+                  ports:
+                      - name: http
+                        containerPort: {{.Values.service.port}}
+                        protocol: TCP
+{{/*                  livenessProbe:*/}}
+{{/*                      httpGet:*/}}
+{{/*                          path: /*/}}
+{{/*                          port: http*/}}
+{{/*                  readinessProbe:*/}}
+{{/*                      httpGet:*/}}
+{{/*                          path: /*/}}
+{{/*                          port: http*/}}
+                {{- with .Values.nodeSelector }}
+            nodeSelector:
+                {{- toYaml . | nindent 8 }}
+                {{- end }}
+                {{- with .Values.affinity }}
+            affinity:
+                {{- toYaml . | nindent 8 }}
+                {{- end }}
+                {{- with .Values.tolerations }}
+            tolerations:
+            {{- toYaml . | nindent 8 }}
+        {{- end }}
